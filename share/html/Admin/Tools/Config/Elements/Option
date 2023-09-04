@@ -83,6 +83,7 @@ return if $meta->{Invisible} || $meta->{Deprecated} || $meta->{Obfuscate};
 my $raw_value = RT->Config->Get( $name );
 my ($val, $format) = $stringify->($raw_value);
 my $doc_url = "https://docs.bestpractical.com/rt/$doc_version/RT_Config.html#$option->{Help}";
+$doc_url = '' if $current_context->{tab} eq 'Plugins';
 my $widget = $meta->{'Widget'} || '/Widgets/Form/JSON';
 
 # CustomDateRanges could contain subrefs, but we supply limited/safe
@@ -92,6 +93,9 @@ my $is_immutable = $meta->{Immutable}
                 || ( $format eq 'code' && $widget ne '/Widgets/Form/CustomDateRanges' );
 
 my $current_value = $format ? $val : $raw_value;
+if ($current_value && !$format && $widget eq '/Widgets/Form/JSON') {
+  $current_value = to_json($current_value, {pretty => 1, canonical => 1});
+}
 
 my $current_file_value;
 
@@ -131,7 +135,7 @@ elsif ($widget eq '/Widgets/Form/Select') {
 my $row_start = qq{<div class="widget form-row" id="form-box-@{[ lc $name ]}">
   <div class="label col-4">
     <span data-toggle="tooltip" data-placement="top" data-original-title="$args->{Tooltip}">
-      <a href="$doc_url" target="_blank">$name</a>
+    }. ($doc_url ? qq{<a href="$doc_url" target="_blank">$name</a>} : $name) .qq{
     </span>
   </div>
   <div class="value col-8">
@@ -190,4 +194,5 @@ my $row_end = qq{</div></div>};
 <!-- end option <% $name %> -->
 <%ARGS>
 $option
+$current_context => {}
 </%ARGS>

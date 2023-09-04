@@ -58,7 +58,7 @@
 % my $can_edit;
 % foreach my $option ( @{$subsection->{Content}} ) {
 %   $can_edit ||= 1 unless $RT::Config::META{$option->{Name}}{Immutable};
-  <& /Admin/Tools/Config/Elements/Option, option => $option &>
+  <& /Admin/Tools/Config/Elements/Option, option => $option, current_context => $current_context &>
 % }
 <input type="hidden" name="tab" value="<% $current_context->{tab} %>" />
 <input type="hidden" name="section" value="<% $current_context->{section} %>" />

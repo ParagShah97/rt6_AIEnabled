@@ -2494,54 +2494,30 @@ sub LoadSectionMap {
     }
 
     my $ConfigFile = "$RT::EtcPath/RT_Config.pm";
-    require Pod::Simple::HTML;
-    my $PodParser  = Pod::Simple::HTML->new();
+    $SectionMap = $self->_LoadSectionMapFromCoreFile($ConfigFile);
 
-    my $html;
-    $PodParser->output_string( \$html );
-    $PodParser->parse_file($ConfigFile);
+    push @$SectionMap, {
+        Name => 'Plugins',
+        Content => [],
+    };
 
-    my $has_subsection;
-    while ( $html =~ m{<(h[123]|dt)\b[^>]*>(.*?)</\1>}sg ) {
-        my ( $tag, $content ) = ( $1, $2 );
-        if ( $tag eq 'h1' ) {
-            my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
-            next if $title =~ /^(?:NAME|DESCRIPTION)$/;
-            push @$SectionMap, { Name => $title, Content => [] };
+    foreach my $plugin (grep $_, RT->Config->Get('Plugins')) {
+        my $path = RT::Plugin->new( name => $plugin )->Path('etc');
+        next unless -d $path;
+
+        my @ext_map;
+        my @ext_configs = $self->_ConfigsInDir($path);
+        foreach my $file (@ext_configs) {
+            my $tmp = $self->_LoadSectionMapFromPluginFile("$path/$file");
+            push @ext_map, @$tmp;
         }
-        elsif (@$SectionMap) {
-            if ( $tag eq 'h2' ) {
-                my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
-                push @{ $SectionMap->[-1]{Content} }, { Name => $title, Content => [] };
-                $has_subsection = 0;
-            }
-            elsif ( $tag eq 'h3' ) {
-                my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
-                push @{ $SectionMap->[-1]{Content}[-1]{Content} }, { Name => $title, Content => [] };
-                $has_subsection ||= 1;
-            }
-            else {
-                # tag is 'dt'
-                if ( !$has_subsection ) {
 
-                    # Create an empty subsection to keep the same data structure
-                    push @{ $SectionMap->[-1]{Content}[-1]{Content} }, { Name => '', Content => [] };
-                    $has_subsection = 1;
-                }
-
-                # a single item (dt) can document several options, in separate <code> elements
-                my ($name) = $content =~ m{name=".([^"]*)"};
-                $name =~ s{,_.}{-}g;    # e.g. DatabaseHost,_$DatabaseRTHost
-                while ( $content =~ m{<code>(.)([^<]*)</code>}sg ) {
-                    my ( $sigil, $option ) = ( $1, $2 );
-                    next unless $sigil =~ m{[\@\%\$]};    # no sigil => this is a value for a select option
-                    if ( $META{$option} ) {
-                        next if $META{$option}{Invisible};
-                    }
-                    push @{ $SectionMap->[-1]{Content}[-1]{Content}[-1]{Content} }, { Name => $option, Help => $name };
-                }
-            }
-        }
+        my $short_plugin = $plugin;
+        $short_plugin =~ s/^RT::Extension:://;
+        push @{ $SectionMap->[-1]{Content} }, {
+            Name    => $short_plugin,
+            Content => \@ext_map,
+        };
     }
 
     # Remove empty tabs/sections
@@ -2557,6 +2533,106 @@ sub LoadSectionMap {
     return $SectionMap;
 }
 
+sub _LoadSectionMapFromCoreFile {
+    my $self = shift;
+    my $ConfigFile = shift;
+
+    require Pod::Simple::HTML;
+    my $PodParser  = Pod::Simple::HTML->new();
+
+    my $html;
+    $PodParser->output_string( \$html );
+    $PodParser->parse_file($ConfigFile);
+
+    my $res = [];
+
+    my $has_subsection;
+    while ( $html =~ m{<(h[123]|dt)\b[^>]*>(.*?)</\1>}sg ) {
+        my ( $tag, $content ) = ( $1, $2 );
+        if ( $tag eq 'h1' ) {
+            my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
+            next if $title =~ /^(?:NAME|DESCRIPTION|WARNING)$/;
+            push @$res, { Name => $title, Content => [] };
+        }
+        elsif (@$res) {
+            if ( $tag eq 'h2' ) {
+                my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
+                push @{ $res->[-1]{Content} }, { Name => $title, Content => [] };
+                $has_subsection = 0;
+            }
+            elsif ( $tag eq 'h3' ) {
+                my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
+                push @{ $res->[-1]{Content}[-1]{Content} }, { Name => $title, Content => [] };
+                $has_subsection ||= 1;
+            }
+            else {
+                # tag is 'dt'
+                if ( !$has_subsection ) {
+
+                    # Create an empty subsection to keep the same data structure
+                    push @{ $res->[-1]{Content}[-1]{Content} }, { Name => '', Content => [] };
+                    $has_subsection = 1;
+                }
+
+                # a single item (dt) can document several options, in separate <code> elements
+                my ($name) = $content =~ m{name=".([^"]*)"};
+                $name =~ s{,_.}{-}g;    # e.g. DatabaseHost,_$DatabaseRTHost
+                while ( $content =~ m{<code>(.)([^<]*)</code>}sg ) {
+                    my ( $sigil, $option ) = ( $1, $2 );
+                    next unless $sigil =~ m{[\@\%\$]};    # no sigil => this is a value for a select option
+                    if ( $META{$option} ) {
+                        next if $META{$option}{Invisible};
+                    }
+                    push @{ $res->[-1]{Content}[-1]{Content}[-1]{Content} }, { Name => $option, Help => $name };
+                }
+            }
+        }
+    }
+
+    return $res;
+}
+
+sub _LoadSectionMapFromPluginFile {
+    my $self = shift;
+    my $file = shift;
+
+    require Pod::Simple::HTML;
+    my $PodParser  = Pod::Simple::HTML->new();
+
+    my $html;
+    $PodParser->output_string( \$html );
+    $PodParser->parse_file($file);
+
+    my $res = [];
+
+    my $cur;
+    while ( $html =~ m{<(h1|dt)\b[^>]*>(.*?)</\1>}sg ) {
+        my ( $tag, $content ) = ( $1, $2 );
+        if ( $tag eq 'h1' ) {
+            my ($title) = $content =~ m{<a class='u'\s*name="[^"]*"\s*>([^<]*)</a>};
+            next if $title =~ /^(?:NAME|DESCRIPTION|WARNING)$/;
+            push @$res, { Name => $title, Content => [] };
+            $cur = $res->[-1];
+        }
+        elsif ($cur) { # <dt>
+
+            # a single item (dt) can document several options, in separate <code> elements
+            my ($name) = $content =~ m{name=".([^"]*)"};
+            $name =~ s{,_.}{-}g;    # e.g. DatabaseHost,_$DatabaseRTHost
+            while ( $content =~ m{<code>(.)([^<]*)</code>}sg ) {
+                my ( $sigil, $option ) = ( $1, $2 );
+                next unless $sigil =~ m{[\@\%\$]};    # no sigil => this is a value for a select option
+                if ( $META{$option} ) {
+                    next if $META{$option}{Invisible};
+                }
+                push @{ $cur->{Content} }, { Name => $option, Help => $name };
+            }
+        }
+    }
+
+    return $res;
+}
+
 =head2 Configs
 
 Returns list of config files found in local etc, plugins' etc
@@ -2569,17 +2645,24 @@ sub Configs {
 
     my @configs = ();
     foreach my $path ( $RT::LocalEtcPath, RT->PluginDirs('etc'), $RT::EtcPath ) {
-        my $mask = File::Spec->catfile( $path, "*_Config.pm" );
-        my @files = glob $mask;
-        @files = grep !/^RT_Config\.pm$/,
-            grep $_ && /^\w+_Config\.pm$/,
-            map { s/^.*[\\\/]//; $_ } @files;
-        push @configs, sort @files;
+        push @configs, $self->_ConfigsInDir($path);
     }
 
     my %seen;
     @configs = grep !$seen{$_}++, @configs;
     return @configs;
+}
+
+sub _ConfigsInDir {
+    my $self = shift;
+    my $dir = shift;
+
+    my $mask = File::Spec->catfile( $dir, "*_Config.pm" );
+    my @files = glob $mask;
+    @files = grep !/^RT_Config\.pm$/,
+        grep $_ && /^\w+_Config\.pm$/,
+        map { s/^.*[\\\/]//; $_ } @files;
+    return sort @files;
 }
 
 =head2 LoadedConfigs
