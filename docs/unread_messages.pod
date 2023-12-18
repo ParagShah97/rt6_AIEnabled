@@ -1,0 +1,84 @@
+=head1 Unread Messages
+
+RT can show a notification to users when a ticket has unread messages and
+helps them keep track of their unread messages.
+
+It also provides ways to search for tickets with or without unread
+messages per user, facilitating efficient ticket management.
+
+=head1 Enabling Unread Messages Notifications
+
+RT users can enable or disable the Unread Messages Notification on their
+preferences page:
+
+    Logged in as ... > Settings > Preferences > Notify me of unread messages
+
+After enabling this option, users will see a notification on the top of the
+page when they have unread messages in a ticket. The notification will
+disappear when the user marks the messages as seen.
+
+=for html <img alt="Unread Messages Notification" src="images/unread-notification.png">
+
+=for :text [Unread Messages Notification F<docs/images/unread-notification.png>]
+
+=for :man [Unread Messages Notification F<docs/images/unread-notification.png>]
+
+=head2 Enabling Unread Messages Notifications for All Users
+
+The Unread Messages Notification can be enabled for all users by default.
+To do so, set the L<RT_Config.pm/"$ShowUnreadMessageNotifications">
+configuration in the RT_SiteConfig.pm file:
+
+    Set($ShowUnreadMessageNotifications, 1);
+
+=head1 Adding the Unread Messages Column to Search Results
+
+In previous versions of RT, the 'UpdateStatus' column was used to display
+Yes/No for unread messages. In newer versions, the 'UnreadMessages' column
+is utilized instead, showing a count of unread messages by the current user.
+
+To add this column to Search Results or a Dashboard:
+
+    - Navigate to the desired search or dashboard.
+    - Click on 'Edit Search'.
+    - Add the 'UnreadMessages' column in the "Display Columns" section.
+
+=for html <img alt="Unread Messages Column" src="images/unread-messages-column.png">
+
+=for :text [Unread Messages Column F<docs/images/unread-messages-column.png>]
+
+=for :man [Unread Messages Column F<docs/images/unread-messages-column.png>]
+
+=head1 Searching for Tickets with and without Unread Messages
+
+Request Tracker introduces two new search terms for TicketSQL to facilitate
+searching based on unread messages:
+
+=over
+
+=item Search Term: HasUnreadMessages
+
+This search term is used to filter tickets that contain unread messages for
+indicated users. Example usage:
+
+    queue = 'General' AND Status = 'open' AND HasUnreadMessages = 'john'
+
+This query will retrieve tickets in the 'General' queue that are open and
+have unread messages for the user 'john'.
+
+You can also have an abstract search term that will look for unread messages
+of the current user:
+
+    queue = 'General' AND Status = 'open' AND HasUnreadMessages = '__CurrentUser__'
+
+=item Search Term: HasNoUnreadMessages
+
+This search term filters tickets that do not have any unread messages.
+Example usage:
+
+    queue = 'Support' AND HasNoUnreadMessages='__CurrentUser__'
+
+This query will fetch tickets in the 'Support' queue that do not have any
+unread messages for the current user.
+
+=back
