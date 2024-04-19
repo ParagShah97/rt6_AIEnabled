@@ -111,4 +111,6 @@ sub full_message {
 
 sub show_trace { return 0 }
 
+RT::Base->_ImportOverlays();
+
 1;

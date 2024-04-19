@@ -1944,4 +1944,6 @@ END {
     %{'Win32::Locale::Lexicon'};
 }
 
+RT::Base->_ImportOverlays();
+
 1;

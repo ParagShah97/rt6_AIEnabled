@@ -1322,4 +1322,6 @@ sub UpdateLifecycleLayout {
     return 1;
 }
 
+RT::Base->_ImportOverlays();
+
 1;
