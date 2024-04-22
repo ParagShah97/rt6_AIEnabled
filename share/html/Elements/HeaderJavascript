@@ -73,4 +73,8 @@ else {
     @js_files = "/NoAuth/js/squished-$key.js";
 }
 
+if ( RT->Config->Get('HtmxLogAll') ) {
+    push @js_files, "/static/js/htmx-log-all.js";
+}
+
 </%INIT>

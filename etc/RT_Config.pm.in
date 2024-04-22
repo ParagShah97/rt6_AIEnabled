@@ -1818,6 +1818,15 @@ reason, add this to config:
 
 See also L<DBIx::SearchBuilder/BuildSelectQuery>.
 
+=item C<$HtmxLogAll>
+
+Turns on logging of all HTMX requests. This is useful for debugging
+HTMX requests and responses.
+
+=cut
+
+Set($HtmxLogAll, 0);
+
 =back
 
 
