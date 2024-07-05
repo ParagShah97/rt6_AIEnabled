@@ -299,6 +299,10 @@
         background: #cfdeff;
     }
 
+    #app-nav > li > a:hover {
+        background: #cfdeff;
+    }
+
     #topactions form input.btn {
         border-color: #4868b3;
     }
@@ -344,6 +348,10 @@
     }
 
     .page-menu > li:not(:has(svg.fa-cog)):hover {
+        background: #3a474d;
+    }
+
+    #app-nav > li > a.menu-item:hover {
         background: #3a474d;
     }
 
