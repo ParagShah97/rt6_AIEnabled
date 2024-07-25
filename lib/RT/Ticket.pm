@@ -3244,12 +3244,18 @@ sub Forward {
         return ( 0, $self->loc("Permission Denied") );
     }
 
+    if ( $args{MIMEObj} ) {
+        foreach my $header ( qw( Subject To Cc Bcc ) ) {
+            $args{$header} = $args{MIMEObj}->head->get($header);
+        }
+    }
+
     $args{$_} = join ", ", map { $_->format } RT::EmailParser->ParseEmailAddress( $args{$_} || '' ) for qw(To Cc Bcc);
 
     return (0, $self->loc("Can't forward: no valid email addresses specified") )
         unless grep {length $args{$_}} qw/To Cc Bcc/;
 
-    my $mime = MIME::Entity->build(
+    my $mime = $args{MIMEObj} || MIME::Entity->build(
         Type    => $args{ContentType},
         Data    => Encode::encode( "UTF-8", $args{Content} ),
     );
