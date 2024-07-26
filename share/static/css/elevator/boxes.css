@@ -52,11 +52,6 @@
     border-radius: 0 0.25em 0 0.25em;
 }
 
-.titlebox .titlebox-title .right-icon {
-    position: absolute;
-    right: 1rem;
-}
-
 .rt-inline-icon.border {
     padding: 0.25rem;
     display: inline-block;

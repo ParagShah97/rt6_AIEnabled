@@ -45,12 +45,13 @@
 %# those contributions and any derivatives thereof.
 %#
 %# END BPS TAGGED BLOCK }}}
-<div hx-get="<% $htmx_get %>" hx-trigger="<% $lazy_load ? 'revealed' : '' %>" target="_top">
+<div id="<% $htmx_id %>" hx-get="<% $htmx_get %>" hx-trigger="<% $lazy_load ? 'revealed' : '' %>" target="_top">
 % if ( $show_spinner ) {
 <div class="text-center htmx-indicator"><div class="spinner-border text-secondary" role="status"><span class="visually-hidden">Loading...</span></div></div>
 % }
 <%ARGS>
 $htmx_get => undef
+$htmx_id => ''
 $show_spinner => 1
 $lazy_load => 1
 </%ARGS>

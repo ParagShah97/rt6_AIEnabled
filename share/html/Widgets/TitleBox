@@ -55,7 +55,7 @@
 % }
 
 %   if ( $htmx_load ) {
-      <& HTMXLoadStart, htmx_get => $htmx_get &>
+      <& HTMXLoadStart, htmx_get => $htmx_get, htmx_id => $htmx_id &>
 %  }
 
 <% $content | n %>
@@ -78,6 +78,7 @@ $hide_empty => 0
 $hide_chrome => 0
 $htmx_load => undef
 $htmx_get => undef
+$htmx_id => ''
 </%ARGS>
 <%INIT>
 
