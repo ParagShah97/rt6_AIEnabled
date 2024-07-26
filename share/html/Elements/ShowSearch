@@ -130,6 +130,10 @@ if ($SavedSearch) {
         if ( $SearchArg->{'SearchType'} eq 'Chart' ) {
             $SearchArg->{'SavedChartSearchId'} ||= $SavedSearch;
             $class = $SearchArg->{Class} if $SearchArg->{Class};
+            $customize
+                = RT->Config->Get('WebPath')
+                . '/Search/Chart.html?'
+                . $m->comp( '/Elements/QueryString', SavedSearchLoad => $SavedSearch );
         }
 
         # XXX: dispatch to different handler here
