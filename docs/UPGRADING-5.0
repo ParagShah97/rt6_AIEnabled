@@ -696,4 +696,19 @@ If you previously set a custom C<@SearchResultsPerPage> and you want to keep the
 
 =back
 
+=head1 UPGRADING FROM 5.0.7 AND EARLIER
+
+=over 4
+
+=item L<RT_Config/$SendmailBounceArguments>
+
+RT 5.0.8 now supports totally independent configuration of
+L<RT_Config/$SendmailBounceArguments>, which means that RT will not use any
+arguments defined in L<RT_Config/$SendmailArguments> when sending bounces.
+
+If you previously customized L<RT_Config/$SendmailBounceArguments>, you
+probably need to add "-oi" there.
+
+=back
+
 =cut
