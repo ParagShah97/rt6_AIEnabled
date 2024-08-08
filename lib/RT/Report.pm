@@ -110,8 +110,25 @@ our %GROUPINGS_META = (
         Distinct => 1,
     },
     Priority => {
-        Sort => 'numeric raw',
         Distinct => 1,
+        Display => sub {
+            my $self  = shift;
+            my %args  = (@_);
+            my $value = $args{'VALUE'};
+
+            if ( RT->Config->Get('EnablePriorityAsString') ) {
+                my $map_ref  = RT::Ticket::GetPriorityAsStringMapping( $self, 'Default' );
+
+                # Count from high down to low until we find one that our number is
+                # greater than or equal to.
+                foreach my $label ( sort { $map_ref->{$b} <=> $map_ref->{$a} } keys %$map_ref ) {
+                    return $label if $value >= $map_ref->{$label};
+                }
+            }
+            else {
+                return $value;
+            }
+        },
     },
     User => {
         SubFields => [grep RT::User->_Accessible($_, "public"), qw(
