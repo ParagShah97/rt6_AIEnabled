@@ -131,7 +131,7 @@ $COLUMN_MAP = {
     Description => {
         title     => 'Description', # loc
         attribute => 'Description',
-        value     => sub { return \( $m->scomp( '/Ticket/Elements/ShowDescription', Ticket => $_[0], InTable => 0 ) ) },
+        value     => sub { return \( $m->scomp( '/Ticket/Elements/ShowDescription', Ticket => $_[0], InTable => 1 ) ) },
         edit      => sub { return \($m->scomp("/Ticket/Elements/EditDescription", TicketObj => $_[0], Name => 'Description' ) ) },
     },
     ExtendedStatus => {
