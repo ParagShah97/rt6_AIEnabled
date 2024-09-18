@@ -186,6 +186,16 @@ a:hover.close {
     display: table-cell;
 }
 
+.avatar-xs {
+    width: 20px;
+    height: 20px;
+    font-size: 0.76em;
+    margin-left: 1px;
+    margin-right: 1px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+}
+
 .avatar-sm {
     width: 28px;
     height: 28px;
