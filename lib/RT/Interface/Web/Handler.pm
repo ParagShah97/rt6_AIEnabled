@@ -246,6 +246,31 @@ MODPERL
     return $res;
 }
 
+=head1 CheckMPMConfiguration
+
+Make sure we're running with the 'prefork' MPM.
+
+=cut
+
+sub CheckMPMConfiguration {
+    my $self = shift;
+    eval `require Data::Dumper`;
+
+    if ($CGI::MOD_PERL and $CGI::MOD_PERL >= 2 ) {
+        if( eval 'use Apache2::Const -compile => qw(:mpmq)' and eval 'require Apache2::MPM' ) {
+            eval 'Data::Dumper::Dumper( \*Apache2::Const::MPMQ_IS_THREADED )';
+            #my $mpm_type = Apache2::MPM->query(Apache2::Const::MPMQ_IS_THREADED);
+            #die Data::Dumper::Dumper( $mpm_type );
+        }
+        else {
+            die "have mod_perl >= 2, but error pulling in Apache: '$@', '$!'";
+        }
+    }
+    else {
+        die "don't seem to be apache";
+    }
+}
+
 # PSGI App
 
 use RT::Interface::Web::Handler;
