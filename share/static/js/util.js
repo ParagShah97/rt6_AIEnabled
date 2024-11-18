@@ -356,6 +356,41 @@ function textToHTML(value) {
                 .replace(/\n/g,   "\n<br />");
 };
 
+// Initialize the tom-select library
+function initializeSelectElements(elt) {
+
+    // The selectpicker class was used by the bootstrap-select
+    // JS library as the default. We retained it because tom-select
+    // allows you to set any class value and all of the RT dropdowns
+    // already had 'selectpicker'.
+
+    elt.querySelectorAll('select.selectpicker').forEach((elt)=>{
+
+        /* We shouldn't initialize on parts of the page that have already
+           been initialized, so this check shouldn't be needed. Leave commented
+           out for now pending more testing.
+
+        if ( elt.tomselect ) {
+            // This can get called on elements already initialized.
+            return;
+        }
+*/
+
+        let settings = {
+            allowEmptyOption: true,
+        };
+
+        if ( elt.options && elt.options.length < RT.Config.SelectLiveSearchLimit ) {
+            // Under the config limit, don't show the search input box,
+            // just a regular dropdown.
+            settings.controlInput = null;
+        }
+
+        new TomSelect(elt,settings);
+
+    });
+}
+
 function ReplaceAllTextareas(elt) {
     window.CKEDITOR ||= { "instances": {} };
 
@@ -624,7 +659,7 @@ function refreshCollectionListRow(tr, table, success, error) {
             // Get the new replaced tr
             tr = table.find('tr[data-index=' + index + ']');
             initDatePicker(tr);
-            tr.find('.selectpicker').selectpicker();
+//            tr.find('.selectpicker').selectpicker();
             RT.Autocomplete.bind(tr);
             if (success) { success(response) }
         },
@@ -775,7 +810,7 @@ jQuery(function() {
             elt.classList.remove('hasDatepicker');
         });
 
-        jQuery(evt.detail.historyElt).find('.selectpicker').selectpicker('destroy').addClass('selectpicker');
+//        jQuery(evt.detail.historyElt).find('.selectpicker').selectpicker('destroy').addClass('selectpicker');
     });
 
     document.body.addEventListener('actionsChanged', function(evt) {
@@ -846,6 +881,7 @@ jQuery(function() {
 });
 
 htmx.onLoad(function(elt) {
+    initializeSelectElements(elt);
     ReplaceAllTextareas(elt);
     AddAttachmentWarning();
     jQuery(elt).find('a.delete-attach').click( function() {
@@ -979,7 +1015,7 @@ htmx.onLoad(function(elt) {
         var new_operator = form.find(':input[name="' + val + 'Op"]:first').clone();
         row.children('div.operator').children().remove();
         row.children('div.operator').append(new_operator);
-        row.children('div.operator').find('select.selectpicker').selectpicker();
+//        row.children('div.operator').find('select.selectpicker').selectpicker();
 
         var new_value = form.find(':input[name="ValueOf' + val + '"]:first');
         if ( new_value.hasClass('ui-autocomplete-input') ) {
@@ -994,7 +1030,7 @@ htmx.onLoad(function(elt) {
         new_value.attr('id', null);
         row.children('div.value').children().remove();
         row.children('div.value').append(new_value);
-        row.children('div.value').find('select.selectpicker').selectpicker();
+//        row.children('div.value').find('select.selectpicker').selectpicker();
         if ( new_value.hasClass('datepicker') ) {
             new_value.removeClass('hasDatepicker');
             initDatePicker(row);
@@ -1443,7 +1479,7 @@ jQuery(function () {
 
         editor.find(':input:visible:enabled:first').focus();
         setTimeout( function(){
-            editor.find('.selectpicker').selectpicker('toggle');
+            editor.find('select.selectpicker')[0].tomselect.open();
         }, 100);
 
         jQuery('body').addClass('inline-editing');
@@ -1788,17 +1824,12 @@ htmx.onLoad( function() {
     RT.UserMessages = {};
 } );
 
-function updateSelectpickerLiveSearch (element) {
-    element ||= jQuery('.selectpicker');
-    element.filter(':not([data-live-search])').each(function() {
-        jQuery(this).attr('data-live-search', jQuery(this).find('option').length >= RT.Config.SelectLiveSearchLimit ? true : false );
-    });
-}
-
 function refreshSelectpicker (element) {
     element ||= jQuery('.selectpicker');
-    updateSelectpickerLiveSearch(element);
-    element.selectpicker('refresh');
+    // Why would we call this on non-selectpicker elements?
+    if ( element.tomselect ) {
+        element.tomselect.refreshOptions();
+    }
 }
 
 function checkRefreshState(elt) {

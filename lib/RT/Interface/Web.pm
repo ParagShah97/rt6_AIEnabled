@@ -130,7 +130,6 @@ sub JSFiles {
         jquery-ui-patch-datepicker.js
         selectize.min.js
         bootstrap.bundle.min.js
-        bootstrap-select.min.js
         bootstrap-combobox.js
         i18n.js
         util.js
@@ -152,6 +151,7 @@ sub JSFiles {
         jquery.jgrowl.min.js
         clipboard.min.js
         pagelayout.js
+        tom-select.complete.min.js
         }, RT->Config->Get('JSFiles');
 }
 
