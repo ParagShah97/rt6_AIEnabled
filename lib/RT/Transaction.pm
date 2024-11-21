@@ -2419,6 +2419,13 @@ sub FindDependencies {
         $ticket->Load( $self->NewValue );
         $deps->Add( out => $ticket );
     }
+=for comment
+    if ( ( $self->TimeWorker != 0 ) && ( $self->TimeWorker != $self->Creator ) ) {
+        my $user = RT::User->new( RT->SystemUser );
+        $user->Load( $self->TimeWorker );
+        $deps->Add( out => $user );
+    }
+=cut
 }
 
 sub __DependsOn {
@@ -2523,6 +2530,11 @@ sub Serialize {
     } elsif ($type =~ /^(Add|Open|Resolve)Reminder$/) {
         $store{NewValue} = \( join '-', 'RT::Ticket', $RT::Organization, $store{NewValue} );
     }
+=for comment
+    if ( ( $store{TimeWorker} != 0 ) && ( $store{TimeWorker} != $store{Creator} ) ) {
+        $store{TimeWorker} = \$args{serializer}{_uid}{user}{ $store{TimeWorker} };
+    }
+=cut
 
     return %store;
 }
