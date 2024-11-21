@@ -2100,12 +2100,15 @@ Set(@CSSFiles, qw//);
 This determines how user info is displayed. 'concise' will show the
 first of RealName, Name or EmailAddress that has a value. 'verbose' will
 show EmailAddress, and the first of RealName or Name which is defined.
-The default, 'role', uses 'verbose' for unprivileged users, and the Name
-followed by the RealName for privileged users.
+'role', uses 'verbose' for unprivileged users, and the Name
+followed by the RealName for privileged users. 'concisewithavatar',
+'verbosewithavatar' and 'rolewithavatar' are the same as their
+non-avatar counterparts, but include the user's avatar.
+The default value is 'rolewithavatar'.
 
 =cut
 
-Set($UsernameFormat, "role");
+Set($UsernameFormat, "rolewithavatar");
 
 =item C<$UserSearchResultFormat>
 

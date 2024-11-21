@@ -137,7 +137,7 @@ my @suggestions;
 
 if ($users) {
     while ( my $user = $users->Next ) {
-        my $suggestion = { id => $user->id, label => $user->Format, value => $user->EmailAddress || $user->Name, text => $term };
+        my $suggestion = { id => $user->id, label => scalar $user->Format, value => $user->EmailAddress || $user->Name, text => $term };
         $m->callback(
             CallbackName => "ModifySuggestion",
             suggestion   => $suggestion,

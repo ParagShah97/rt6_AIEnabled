@@ -1019,7 +1019,7 @@ sub _FormatUser {
     my $user = shift;
     return [
         \'<span class="user" data-replace="user" data-user-id="', $user->id, \'">',
-        $user->Format,
+        scalar $user->Format,
         \'</span>'
     ];
 }
@@ -1116,7 +1116,7 @@ sub _CanonicalizeRoleName {
     "Forward Transaction" => sub {
         my $self = shift;
         my $recipients = join ", ", map {
-            RT::User->Format( Address => $_, CurrentUser => $self->CurrentUser )
+            scalar RT::User->Format( Address => $_, CurrentUser => $self->CurrentUser )
         } RT::EmailParser->ParseEmailAddress($self->Data);
 
         return ( "Forwarded [_3]Transaction #[_1][_4] to [_2]",
@@ -1126,7 +1126,7 @@ sub _CanonicalizeRoleName {
     "Forward Ticket" => sub {
         my $self = shift;
         my $recipients = join ", ", map {
-            RT::User->Format( Address => $_, CurrentUser => $self->CurrentUser )
+            scalar RT::User->Format( Address => $_, CurrentUser => $self->CurrentUser )
         } RT::EmailParser->ParseEmailAddress($self->Data);
 
         return ( "Forwarded Ticket to [_1]", $recipients ); #loc()

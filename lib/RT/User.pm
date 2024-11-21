@@ -1902,12 +1902,17 @@ sub FriendlyName {
 Class or object method.
 
 Returns a string describing a user in the current user's preferred format.
+It can also return a boolean value indicating whether the user wants to see
+avatars or not.
 
 May be invoked in three ways:
 
     $UserObj->Format;
     RT::User->Format( User => $UserObj );   # same as above
     RT::User->Format( Address => $AddressObj, CurrentUser => $CurrentUserObj );
+
+    # To force return only the formatted string and not the Avatar preference
+    scalar RT::User->Format( ... );
 
 Possible arguments are:
 
@@ -1997,10 +2002,23 @@ sub _FormatUserRole {
     return $name;
 }
 
+sub _FormatUserRolewithavatar {
+    my $self = shift;
+    my %args = @_;
+
+    return wantarray ? ($self->_FormatUserRole(@_), 1) : $self->_FormatUserRole(@_);
+}
+
 sub _FormatUserConcise {
     my $self = shift;
     my %args = @_;
     return $args{User} ? $args{User}->FriendlyName : $args{Address}->address;
+}
+
+sub _FormatUserConcisewithavatar {
+    my $self = shift;
+    my %args = @_;
+    return wantarray ? ($self->_FormatUserConcise(@_), 1) : $self->_FormatUserConcise(@_);
 }
 
 sub _FormatUserVerbose {
@@ -2021,6 +2039,12 @@ sub _FormatUserVerbose {
     }
 
     return join " ", grep { $_ } ($phrase || $comment || ''), ($email ? "<$email>" : "");
+}
+
+sub _FormatUserVerbosewithavatar {
+    my $self = shift;
+    my %args = @_;
+    return wantarray ? ($self->_FormatUserVerbose(@_), 1) : $self->_FormatUserVerbose(@_);
 }
 
 =head2 PreferredKey

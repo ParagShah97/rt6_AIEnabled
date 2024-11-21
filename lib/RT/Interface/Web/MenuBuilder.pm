@@ -298,19 +298,37 @@ sub BuildMainNav {
         _BuildAdminTopMenu( $top );
     }
 
-    my $user_tooltip = loc('Logged in as [_1]', $HTML::Mason::Commands::m->interp->apply_escapes($current_user->Name, 'u'));
-    my $user_avatar = $HTML::Mason::Commands::m->scomp('/Elements/ShowAvatar',
-                                                    User => $current_user,
-                                                    Tooltip => $user_tooltip,
-                                                    class => 'current-user',
-                                                    );
-
-    my $about_me = $top->child( 'preferences' =>
-        title        => $user_avatar,
-        escape_title => 0,
-        path         => '/User/Summary.html?id=' . $current_user->id,
-        class        => 'p-1 avatar',
+    my $UsernameFormat = RT->Config->Get( "UsernameFormat", $current_user );
+    my $user_menu;
+    my $user_menu_class = '';
+    if ( $UsernameFormat =~ /withavatar$/ ) {
+        my $user_menu_tooltip = loc(
+            'Logged in as [_1]',
+            $HTML::Mason::Commands::m->interp->apply_escapes(
+                $current_user->Name, 'u'
+            )
+        );
+        $user_menu = $HTML::Mason::Commands::m->scomp(
+            '/Elements/ShowAvatar',
+            User    => $current_user,
+            Tooltip => $user_menu_tooltip,
+            class   => 'current-user',
+        );
+        $user_menu_class = 'avatar p-1';
+    } else {
+        my $username = '<span class="current-user">'
+            . $HTML::Mason::Commands::m->interp->apply_escapes(
+            $current_user->Name, 'h' )
+            . '</span>';
+        $user_menu = loc( 'Logged in as [_1]', $username );
+    }
+    my $about_me = $top->child(
+        'preferences' => title => $user_menu,
+        escape_title  => 0,
+        path          => '/User/Summary.html?id=' . $current_user->id,
+        class         => $user_menu_class,
     );
+
 
     $about_me->child( rt_name => title => loc("RT for [_1]", RT->Config->Get('rtname')), path => '/' );
 
@@ -1979,17 +1997,38 @@ sub BuildSelfServiceMainNav {
     $top->child( "assets", title => loc("Assets"), path => "/SelfService/Asset/" )
         if $current_user->HasRight( Right => 'ShowAssetsMenu', Object => RT->System );
 
-    my $user_tooltip = loc('Logged in as [_1]', $HTML::Mason::Commands::m->interp->apply_escapes($current_user->Name, 'u'));
-    my $user_avatar = $HTML::Mason::Commands::m->scomp('/Elements/ShowAvatar',
-                                                    User => $current_user,
-                                                    Tooltip => $user_tooltip,
-                                                    class => 'current-user',
-                                                    );
-    my $about_me = $top->child( preferences =>
-        title        => $user_avatar,
-        escape_title => 0,
-        class        => 'p-0',
+    my $UsernameFormat = RT->Config->Get( "UsernameFormat", $current_user );
+    my $user_menu;
+    my $user_menu_class = '';
+    if ( $UsernameFormat =~ /withavatar$/ ) {
+        my $user_menu_tooltip = loc(
+            'Logged in as [_1]',
+            $HTML::Mason::Commands::m->interp->apply_escapes(
+                $current_user->Name, 'u'
+            )
+        );
+        $user_menu = $HTML::Mason::Commands::m->scomp(
+            '/Elements/ShowAvatar',
+            User    => $current_user,
+            Tooltip => $user_menu_tooltip,
+            class   => 'current-user',
+        );
+        $user_menu_class = 'p-1';
+    } else {
+        my $username = '<span class="current-user">'
+            . $HTML::Mason::Commands::m->interp->apply_escapes(
+            $current_user->Name, 'h' )
+            . '</span>';
+        $user_menu = loc( 'Logged in as [_1]', $username );
+    }
+
+    my $about_me = $top->child(
+        'preferences' => title => $user_menu,
+        escape_title  => 0,
+        path          => '/User/Summary.html?id=' . $current_user->id,
+        class         => $user_menu_class,
     );
+
 
     if ( ( RT->Config->Get('SelfServiceUserPrefs') || '' ) eq 'view-info' ||
         $current_user->HasRight( Right => 'ModifySelf', Object => RT->System ) ) {

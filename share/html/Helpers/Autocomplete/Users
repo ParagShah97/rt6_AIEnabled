@@ -112,7 +112,7 @@ $m->callback( CallbackName => "ModifyUsersLimit", Users => $users, Term => $term
 
 my @suggestions;
 while ( my $user = $users->Next ) {
-    my $suggestion = { id => $user->id, label => $user->Format, value => $user->$return, text => $term };
+    my $suggestion = { id => $user->id, label => scalar $user->Format, value => $user->$return, text => $term };
     $m->callback( CallbackName => "ModifySuggestion", suggestion => $suggestion, user => $user );
     push @suggestions, $suggestion;
 }

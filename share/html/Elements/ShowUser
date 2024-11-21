@@ -50,7 +50,7 @@ my $class;
 # $User is an RT::User object
 # $Address is Email::Address object
 
-my $display = RT::User->Format(
+my ( $display, $show_avatars ) = RT::User->Format(
     User        => $User,
     Address     => $Address,
     CurrentUser => $session{CurrentUser},
@@ -74,6 +74,8 @@ my %system_user = (
 if ( $m->request_path =~ /\/Search\/Results\.(tsv|xlsx)$/ ) {
     $ShowUserAvatar = 0;
 }
+
+$ShowUserAvatar = 0 unless $show_avatars;
 
 $m->callback(
     ARGSRef         => \%ARGS,
