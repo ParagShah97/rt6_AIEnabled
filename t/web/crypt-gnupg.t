@@ -451,6 +451,11 @@ like($m->content, qr/$key2.*?$key1/s, "second key (now preferred) shows up befor
 $m->no_warnings_ok;
 
 # test that the new fields work
+# Disable avatar rendering to preserve original test output
+RT::Test->stop_server;
+RT->Config->Set( UsernameFormat => 'role' );
+( $baseurl, $m ) = RT::Test->started_ok;
+$m->login;
 $m->get("$baseurl/Search/Simple.html?q=General");
 my $content = $m->content;
 $content =~ s/&#40;/(/g;
