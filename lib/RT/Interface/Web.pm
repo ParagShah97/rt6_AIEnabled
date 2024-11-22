@@ -2415,6 +2415,7 @@ sub RenderMenu {
         push @classes, 'nav-item dropdown' if $toplevel;
         push @classes, 'has-children' if $child->has_children;
         push @classes, 'dropend' if !$toplevel && $child->has_children;
+        push @classes, 'avatar' if $child->class && $child->class =~ /avatar/;
         $res .= ' class="'. join( ' ', @classes ) .'"'
             if @classes;
 
