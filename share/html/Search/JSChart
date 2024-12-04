@@ -102,12 +102,14 @@ var searchChart = new Chart(ctx, {
         plugins: {
             colorschemes: {
                 scheme: <% $scheme |n,j %>
+            },
+% if ( $ChartStyle =~ /\bbar|line\b/ ) {
+            legend: {
+                display: <% @data == 2 ? 'false' : 'true' %>
             }
+% }
         },
 % if ( $ChartStyle =~ /\bbar|line\b/ ) {
-        legend: {
-            display: <% @data == 2 ? 'false' : 'true' %>
-        },
         tooltips: {
             callbacks: {
                 label: function(tooltipItem, data) {
@@ -122,23 +124,23 @@ var searchChart = new Chart(ctx, {
             }
         },
         scales: {
-            xAxes: [{
+            x: {
                 stacked: <% $stacked ? 'true' : 'false' %>,
-                scaleLabel: {
+                title: {
                     display: true,
                     labelString: <% join(' - ', map $report->Label( $_), @{ $columns{'Groups'} }) |n,j %>
                 },
-                gridLines: {
+                grid: {
                     display: false
                 }
-            }],
-            yAxes: [{
+            },
+            y: {
                 stacked: <% $stacked ? 'true' : 'false' %>,
-                scaleLabel: {
+                title: {
                     display: true,
                     labelString: <% $report->Label( $columns{'Functions'}[0] ) |n,j %>
                 },
-                gridLines: {
+                grid: {
                     drawTicks: true,
                     drawOnChartArea: false
                 },
@@ -155,7 +157,7 @@ var searchChart = new Chart(ctx, {
 %                       }
                     }
                 }
-            }]
+            }
         }
 % }
     }
@@ -165,17 +167,17 @@ var group_by = <% JSON( \@GroupBy ) |n %>;
 var data_queries = <% JSON( \@data_queries ) |n %>;
 
 jQuery('[id="<% $id |n %>"]').click(function(e) {
-    var slice = searchChart.getElementAtEvent(e);
-    if ( !slice[0] ) return;
+    let slice = searchChart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, true);
 
+    if ( !slice[0] ) return;
     var query;
 %   if ( $stacked ) { # data_queries is array of array for stacked charts
-        if ( data_queries[slice[0]._datasetIndex][slice[0]._index] ) {
-            query = data_queries[slice[0]._datasetIndex][slice[0]._index];
+        if ( data_queries[slice[0].datasetIndex][slice[0].index] ) {
+            query = data_queries[slice[0].datasetIndex][slice[0].index];
         }
 %   } else {
-        if ( data_queries[slice[0]._index] ) {
-            query = data_queries[slice[0]._index];
+        if ( data_queries[slice[0].index] ) {
+            query = data_queries[slice[0].index];
         }
 %   }
     window.open(RT.Config.WebPath + '/Search/Results.html?' + query);
